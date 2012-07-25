@@ -54,6 +54,19 @@ class CompatibleWith19Plugin < ClassOptionGroupPlugin
   end
 end
 
+class SubcommandChild < Thor
+  desc "name", "Say a child's name"
+  def name
+    puts "Adam"
+  end
+
+  default_task :name
+end
+
+class SubcommandParent < Thor
+  register SubcommandChild, "child", "name", "Say a child's name"
+end
+
 BoringVendorProvidedCLI.register(
   ExcitingPluginCLI,
   "exciting",
@@ -131,5 +144,12 @@ describe "1.8 and 1.9 syntax compatibility" do
   it "is compatible with both 1.8 and 1.9 syntax w/task options" do
     group_output = capture(:stdout) { BoringVendorProvidedCLI.start(%w[zoo -w lion]) }
     group_output.should match /lion/
+  end
+end
+
+describe "subcommands with default tasks" do
+  it "should invoke the default task through the parent" do
+    parent_output = capture(:stdout) { SubcommandParent.start(%w[child]) }
+    parent_output.chomp.should == 'Adam'
   end
 end
