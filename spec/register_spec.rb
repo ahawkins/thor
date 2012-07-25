@@ -74,9 +74,19 @@ class SubcommandWithArgumentAndDefaultTask < Thor
   default_task :say
 end
 
+class SubcommandWithArgument < Thor
+  argument :text, :type => :string
+
+  desc "print", "Print some text"
+  def print
+    puts text
+  end
+end
+
 class SubcommandParent < Thor
   register SubcommandChild, "child", "name", "Say a child's name"
   register SubcommandWithArgumentAndDefaultTask, "say", "text", "Print some text"
+  register SubcommandWithArgument, "print", "print", "Print text"
 end
 
 BoringVendorProvidedCLI.register(
@@ -166,9 +176,16 @@ describe "subcommands with default tasks" do
   end
 end
 
-describe "subcommands with defined arguments" do
+describe "subcommands with defined arguments and default tasks" do
   it "should invoke the subcommand with the correct argument" do
     parent_output = capture(:stdout) { SubcommandParent.start(%w[say Adam]) }
+    parent_output.chomp.should == 'Adam'
+  end
+end
+
+describe "subcommands with defined arguments" do
+  it "should invoke the subcommand with the correct arguments" do
+    parent_output = capture(:stdout) { SubcommandParent.start(%w[print Adam]) }
     parent_output.chomp.should == 'Adam'
   end
 end
